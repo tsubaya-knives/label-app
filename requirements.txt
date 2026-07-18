@@ -1,0 +1,6 @@
+streamlit
+pandas
+reportlab
+qrcode[pil]
+google-auth
+google-api-python-client

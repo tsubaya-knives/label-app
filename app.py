@@ -29,7 +29,10 @@ MASTER_SHEET_NAME = "SKUコードマスター"
 
 SCOPES = [
     "https://www.googleapis.com/auth/spreadsheets.readonly",
-    "https://www.googleapis.com/auth/drive.file",
+    # drive.file は「アプリ自身が作ったファイル」しか扱えず、
+    # 既存フォルダへの書き込みができないため drive を使う。
+    # 実際に触れる範囲は、サービスアカウントに共有した先だけに限られる。
+    "https://www.googleapis.com/auth/drive",
 ]
 
 PER_SHEET = SHEET["cols"] * SHEET["rows"]   # 44
@@ -201,8 +204,8 @@ def build_filename(v):
 # 画面
 # ==================================================================
 st.title("🏷️ ラベル作成")
-st.caption("商品を選ぶと、1商品につき1ファイルのラベルPDFを作ります。"
-           f"1枚のシート({PER_SHEET}面)すべてが同じラベルになります。")
+st.caption(f"商品を選ぶと、1商品につき1ファイルのラベルPDFを作ります"
+           f"（{PER_SHEET}ラベル/ファイル・すべて同じ商品）。")
 
 try:
     df = load_products()
@@ -262,11 +265,11 @@ edited = st.data_editor(
     use_container_width=True,
     height=420,
     column_config={
-        "選択": st.column_config.CheckboxColumn(required=True, width="small"),
-        "商品名": st.column_config.TextColumn(disabled=True, width="large"),
-        "刃渡り": st.column_config.TextColumn(disabled=True, width="small"),
-        "仕入先": st.column_config.TextColumn(disabled=True, width="small"),
-        "SKU": st.column_config.TextColumn(disabled=True, width="medium"),
+        "選択": st.column_config.CheckboxColumn(required=True, width=60),
+        "商品名": st.column_config.TextColumn(disabled=True, width=330),
+        "刃渡り": st.column_config.TextColumn(disabled=True, width=80),
+        "仕入先": st.column_config.TextColumn(disabled=True, width=90),
+        "SKU": st.column_config.TextColumn(disabled=True, width=360),
     },
     key="editor",
 )
@@ -280,8 +283,7 @@ n = len(picked)
 if n == 0:
     st.info("商品にチェックを入れてください。")
 else:
-    st.success(f"{n} 商品を選択中　→　PDF {n} ファイル"
-               f"（各ファイル {PER_SHEET} 面 = シート1枚分）")
+    st.success(f"{n} 商品を選択中　→　PDF {n} ファイル（{PER_SHEET}ラベル/ファイル）")
 
 if st.button("PDFを作成", type="primary", disabled=(n == 0),
              use_container_width=True):
